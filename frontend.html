@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FakeScope — AI Fake News Detector</title>
+  <style>
+    /* ── Reset & Base ───────────────────────────────────────────── */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #0d0f14;
+      --surface: #161923;
+      --surface2: #1e2330;
+      --border: #2a3045;
+      --accent: #4f8eff;
+      --accent-glow: rgba(79, 142, 255, 0.25);
+      --real: #22c55e;
+      --real-bg: rgba(34, 197, 94, 0.10);
+      --fake: #ef4444;
+      --fake-bg: rgba(239, 68, 68, 0.10);
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --radius: 14px;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Header ─────────────────────────────────────────────────── */
+    header {
+      padding: 1.4rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .logo {
+      width: 38px;
+      height: 38px;
+      background: linear-gradient(135deg, #4f8eff, #a855f7);
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      font-size: 1.2rem;
+    }
+
+    .brand {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -.5px;
+    }
+
+    .brand span {
+      color: var(--accent);
+    }
+
+    .badge {
+      margin-left: auto;
+      font-size: .72rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      padding: .28rem .7rem;
+      border-radius: 999px;
+      color: var(--muted);
+    }
+
+    /* ── Main Layout ─────────────────────────────────────────────── */
+    main {
+      flex: 1;
+      max-width: 860px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.6rem;
+    }
+
+    .hero-text {
+      text-align: center;
+    }
+
+    .hero-text h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -.5px;
+      line-height: 1.2;
+    }
+
+    .hero-text h1 span {
+      color: var(--accent);
+    }
+
+    .hero-text p {
+      margin-top: .6rem;
+      color: var(--muted);
+      font-size: .95rem;
+    }
+
+    /* ── Card ────────────────────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.6rem;
+    }
+
+    /* ── Form ────────────────────────────────────────────────────── */
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: .5rem;
+      margin-bottom: 1rem;
+    }
+
+    .field label {
+      font-size: .82rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    .field input,
+    .field textarea {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: .95rem;
+      padding: .75rem 1rem;
+      outline: none;
+      resize: vertical;
+      transition: border-color .2s;
+      font-family: inherit;
+    }
+
+    .field input:focus,
+    .field textarea:focus {
+      border-color: var(--accent);
+    }
+
+    .field textarea {
+      min-height: 130px;
+    }
+
+    .char-count {
+      font-size: .75rem;
+      color: var(--muted);
+      text-align: right;
+      margin-top: .25rem;
+    }
+
+    /* ── Buttons ─────────────────────────────────────────────────── */
+    .btn-row {
+      display: flex;
+      gap: .75rem;
+      flex-wrap: wrap;
+      margin-top: .25rem;
+    }
+
+    .btn {
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      font-size: .92rem;
+      font-weight: 600;
+      padding: .75rem 1.5rem;
+      transition: opacity .2s, transform .1s;
+      font-family: inherit;
+    }
+
+    .btn:active {
+      transform: scale(.97);
+    }
+
+    .btn:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      flex: 1;
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    .btn-secondary {
+      background: var(--surface2);
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      opacity: .88;
+    }
+
+    .btn-secondary:hover {
+      color: var(--text);
+      border-color: var(--accent);
+    }
+
+    /* ── Loader ──────────────────────────────────────────────────── */
+    .loader {
+      display: none;
+      text-align: center;
+      padding: 2rem 0;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .loader.active {
+      display: block;
+    }
+
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+      margin: 0 auto 1rem;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* ── Result ──────────────────────────────────────────────────── */
+    #result {
+      display: none;
+    }
+
+    #result.visible {
+      display: block;
+      animation: fadeUp .35s ease;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .verdict-banner {
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+      padding: 1.4rem 1.6rem;
+      border-radius: 12px;
+      border: 1px solid;
+      margin-bottom: 1.4rem;
+    }
+
+    .verdict-banner.real {
+      background: var(--real-bg);
+      border-color: var(--real);
+    }
+
+    .verdict-banner.fake {
+      background: var(--fake-bg);
+      border-color: var(--fake);
+    }
+
+    .verdict-icon {
+      font-size: 2.2rem;
+    }
+
+    .verdict-label {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -.5px;
+    }
+
+    .verdict-banner.real .verdict-label {
+      color: var(--real);
+    }
+
+    .verdict-banner.fake .verdict-label {
+      color: var(--fake);
+    }
+
+    .verdict-sub {
+      font-size: .85rem;
+      color: var(--muted);
+      margin-top: .2rem;
+    }
+
+    /* ── Confidence bar ──────────────────────────────────────────── */
+    .conf-section {
+      margin-bottom: 1.4rem;
+    }
+
+    .conf-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: .82rem;
+      color: var(--muted);
+      margin-bottom: .45rem;
+    }
+
+    .conf-label strong {
+      color: var(--text);
+      font-size: .95rem;
+    }
+
+    .bar-track {
+      background: var(--surface2);
+      border-radius: 999px;
+      height: 10px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      transition: width 1s cubic-bezier(.4, 0, .2, 1);
+      width: 0%;
+    }
+
+    .bar-fill.real {
+      background: linear-gradient(90deg, #16a34a, #22c55e);
+    }
+
+    .bar-fill.fake {
+      background: linear-gradient(90deg, #b91c1c, #ef4444);
+    }
+
+    /* ── Probability grid ────────────────────────────────────────── */
+    .prob-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .prob-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.2rem;
+    }
+
+    .prob-card .label {
+      font-size: .78rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    .prob-card .value {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-top: .2rem;
+    }
+
+    .prob-card.fake-card .value {
+      color: var(--fake);
+    }
+
+    .prob-card.real-card .value {
+      color: var(--real);
+    }
+
+    /* ── Stats bar ───────────────────────────────────────────────── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+
+    .stat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .stat .n {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .stat .d {
+      font-size: .76rem;
+      color: var(--muted);
+      margin-top: .2rem;
+    }
+
+    /* ── Error ───────────────────────────────────────────────────── */
+    .error-msg {
+      display: none;
+      background: rgba(239, 68, 68, .1);
+      border: 1px solid var(--fake);
+      border-radius: 8px;
+      padding: .85rem 1rem;
+      color: var(--fake);
+      font-size: .88rem;
+      margin-top: .75rem;
+    }
+
+    .error-msg.visible {
+      display: block;
+    }
+
+
+
+    /* -- Model Selector -- */
+    .model-select-row {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .model-select-row label {
+      font-size: .82rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      white-space: nowrap;
+    }
+
+    .model-tabs {
+      display: flex;
+      gap: .4rem;
+      flex-wrap: wrap;
+    }
+
+    .model-tab {
+      cursor: pointer;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface2);
+      color: var(--muted);
+      font-size: .8rem;
+      font-weight: 600;
+      padding: .35rem .85rem;
+      transition: all .15s;
+      font-family: inherit;
+    }
+
+    .model-tab:hover {
+      border-color: var(--accent);
+      color: var(--text);
+    }
+
+    .model-tab.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    /* -- Model badge -- */
+    .model-used-badge {
+      display: inline-block;
+      font-size: .72rem;
+      font-weight: 600;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: .2rem .65rem;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+
+    .model-used-badge span {
+      color: var(--accent);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="logo">🔍</div>
+    <div class="brand">Fake<span>Scope</span></div>
+    <span class="badge">WELFake + ISOT · 4 Models</span>
+  </header>
+
+  <main>
+
+    <!-- Hero -->
+    <div class="hero-text">
+      <h1>Detect <span>Fake News</span> with AI</h1>
+      <p>Trained on WELFake (72,134 articles) and ISOT (~44,898 articles) — paste a headline or article body to analyse
+        it instantly.</p>
+    </div>
+
+    <!-- Dataset Stats -->
+    <div class="stats-row">
+      <div class="stat">
+        <div class="n">~117K</div>
+        <div class="d">Training articles</div>
+      </div>
+      <div class="stat">
+        <div class="n">4</div>
+        <div class="d">ML models available</div>
+      </div>
+      <div class="stat">
+        <div class="n">~96%</div>
+        <div class="d">Best accuracy (LR)</div>
+      </div>
+    </div>
+
+    <!-- Input Card -->
+    <div class="card">
+      <div class="field">
+        <label>News Headline (optional)</label>
+        <input id="titleInput" type="text" placeholder="e.g. Scientists discover cure for common cold…"
+          oninput="updateChar()" />
+      </div>
+      <div class="field">
+        <label>Article Body</label>
+        <textarea id="textInput" placeholder="Paste the full article text here…" oninput="updateChar()"></textarea>
+        <div class="char-count"><span id="charCount">0</span> characters</div>
+      </div>
+      <div class="model-select-row">
+        <label>Model</label>
+        <div class="model-tabs">
+          <button class="model-tab active" data-key="lr" onclick="selectModel(this)">Logistic Regression</button>
+          <button class="model-tab" data-key="dt" onclick="selectModel(this)">Decision Tree</button>
+          <button class="model-tab" data-key="rf" onclick="selectModel(this)">Random Forest</button>
+          <button class="model-tab" data-key="gb" onclick="selectModel(this)">Gradient Boosting</button>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="analyseBtn" onclick="analyse()">
+          🔍 Analyse Article
+        </button>
+        <button class="btn btn-secondary" onclick="clearAll()">Clear</button>
+      </div>
+      <div class="error-msg" id="errMsg"></div>
+    </div>
+
+    <!-- Loader -->
+    <div class="loader" id="loader">
+      <div class="spinner"></div>
+      Analysing content…
+    </div>
+
+    <!-- Result -->
+    <div class="card" id="result">
+      <div class="model-used-badge">Model: <span id="modelUsedName">&mdash;</span></div>
+      <div class="verdict-banner" id="verdictBanner">
+        <div class="verdict-icon" id="verdictIcon"></div>
+        <div>
+          <div class="verdict-label" id="verdictLabel"></div>
+          <div class="verdict-sub" id="verdictSub"></div>
+        </div>
+      </div>
+
+      <div class="conf-section">
+        <div class="conf-label">
+          <span>Confidence</span>
+          <strong id="confValue"></strong>
+        </div>
+        <div class="bar-track">
+          <div class="bar-fill" id="confBar"></div>
+        </div>
+      </div>
+
+      <div class="prob-grid">
+        <div class="prob-card fake-card">
+          <div class="label">Fake Probability</div>
+          <div class="value" id="fakeProb"></div>
+        </div>
+        <div class="prob-card real-card">
+          <div class="label">Real Probability</div>
+          <div class="value" id="realProb"></div>
+        </div>
+      </div>
+    </div>
+
+
+  </main>
+
+
+  <script>
+    const API_URL = "http://localhost:5000/predict";
+    let selectedModel = "lr";
+    const MODEL_NAMES = { lr: "Logistic Regression", dt: "Decision Tree", rf: "Random Forest", gb: "Gradient Boosting" };
+
+    function selectModel(btn) {
+      document.querySelectorAll(".model-tab").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      selectedModel = btn.dataset.key;
+    }
+
+    function updateChar() {
+      const t = document.getElementById("titleInput").value;
+      const b = document.getElementById("textInput").value;
+      document.getElementById("charCount").textContent = (t + " " + b).trim().length;
+    }
+
+    function clearAll() {
+      document.getElementById("titleInput").value = "";
+      document.getElementById("textInput").value = "";
+      updateChar();
+      document.getElementById("result").classList.remove("visible");
+      document.getElementById("errMsg").classList.remove("visible");
+    }
+
+    async function analyse() {
+      const title = document.getElementById("titleInput").value.trim();
+      const text = document.getElementById("textInput").value.trim();
+      const btn = document.getElementById("analyseBtn");
+      const err = document.getElementById("errMsg");
+      const loader = document.getElementById("loader");
+      err.classList.remove("visible");
+      if (!title && !text) {
+        err.textContent = "Please enter a news headline or article text before analysing.";
+        err.classList.add("visible");
+        return;
+      }
+      btn.disabled = true;
+      btn.textContent = "Analysing...";
+      document.getElementById("result").classList.remove("visible");
+      loader.classList.add("active");
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title, text, model: selectedModel }),
+        });
+        if (!res.ok) throw new Error("Server error: " + res.status);
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+        showResult(data);
+      } catch (e) {
+        if (e.message.includes("Failed to fetch") || e.message.includes("NetworkError")) {
+          const demo = demoPredict(title, text);
+          demo.model = (MODEL_NAMES[selectedModel] || selectedModel) + " (demo)";
+          demo.model_key = selectedModel;
+          showResult(demo);
+        } else {
+          err.textContent = "Error: " + e.message;
+          err.classList.add("visible");
+        }
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "🔍 Analyse Article";
+        loader.classList.remove("active");
+      }
+    }
+
+    function showResult(data) {
+      const isFake = data.label === "FAKE";
+      document.getElementById("modelUsedName").textContent = data.model || "Unknown";
+      const banner = document.getElementById("verdictBanner");
+      banner.className = "verdict-banner " + (isFake ? "fake" : "real");
+      document.getElementById("verdictIcon").innerHTML = isFake ? "&#x1F6A8;" : "&#x2705;";
+      document.getElementById("verdictLabel").textContent = isFake ? "FAKE NEWS" : "REAL NEWS";
+      document.getElementById("verdictSub").textContent = isFake
+        ? "The model predicts this article is likely fabricated or misleading."
+        : "The model predicts this article appears to be credible.";
+      document.getElementById("confValue").textContent = data.confidence + "%";
+      const bar = document.getElementById("confBar");
+      bar.className = "bar-fill " + (isFake ? "fake" : "real");
+      bar.style.width = "0%";
+      setTimeout(() => { bar.style.width = data.confidence + "%"; }, 50);
+      document.getElementById("fakeProb").textContent = (data.fake_prob * 100).toFixed(1) + "%";
+      document.getElementById("realProb").textContent = (data.real_prob * 100).toFixed(1) + "%";
+      document.getElementById("result").classList.add("visible");
+      document.getElementById("result").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    function demoPredict(title, text) {
+      const combined = (title + " " + text).toLowerCase();
+      const fakeKw = ["secret", "deep state", "conspiracy", "hidden agenda", "banned", "suppressed",
+        "they don't want you", "miracle cure", "mainstream media won't", "shocking truth",
+        "5g causes", "microchip", "bill gates", "illuminati", "cover-up", "fake vaccine",
+        "government is lying", "whistleblower reveals", "what they're hiding",
+        "wake up", "sheeple", "plandemic", "false flag", "new world order",
+        "doctors don't want", "big pharma hiding", "censored", "shadow government"];
+      const realKw = ["according to researchers", "study published", "peer-reviewed", "clinical trial",
+        "associated press", "reuters", "scientists confirmed", "findings published",
+        "government announced", "cdc confirmed", "nasa confirmed", "university study",
+        "independent investigation", "verified by", "fact-checked", "multiple sources confirm"];
+      const fakeScore = fakeKw.reduce((s, k) => s + (combined.includes(k) ? 1 : 0), 0);
+      const realScore = realKw.reduce((s, k) => s + (combined.includes(k) ? 1 : 0), 0);
+      let fakeProb = Math.min(Math.max(0.5 + (fakeScore - realScore) * 0.12, 0.05), 0.95);
+      const realProb = 1 - fakeProb;
+      const label = fakeProb > 0.5 ? "FAKE" : "REAL";
+      const confidence = parseFloat((Math.max(fakeProb, realProb) * 100).toFixed(2));
+      return { label, confidence, fake_prob: parseFloat(fakeProb.toFixed(4)), real_prob: parseFloat(realProb.toFixed(4)) };
+    }
+  </script>
+</body>
+
+</html>

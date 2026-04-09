@@ -1,0 +1,23 @@
+✅ REAL NEWS (Reuters/AP style)
+Example 1 — Political
+
+Title: Biden signs infrastructure bill into law
+Text: WASHINGTON (Reuters) - President Joe Biden signed a $1.2 trillion infrastructure bill into law on Monday, delivering a major legislative victory for his administration. The bipartisan measure passed the Senate 69-30 and cleared the House 228-206. The bill allocates funds for roads, bridges, broadband internet and public transit across the United States.
+
+Example 2 — Science
+
+Title: WHO declares monkeypox a global health emergency
+Text: GENEVA (Reuters) - The World Health Organization declared monkeypox a global health emergency on Saturday, its highest level of alert. Director-General Tedros Adhanom Ghebreyesus made the rare decision after an expert committee was unable to reach a consensus. More than 16,000 cases have been reported across 75 countries in recent weeks.
+
+
+🚨 FAKE NEWS (conspiracy style)
+Example 1 — Health conspiracy
+
+Title: Government secretly adding mind control chemicals to tap water
+Text: Whistleblowers from inside the EPA have confirmed that the federal government has been secretly adding fluoride-based mind control chemicals to public drinking water since 1955. Documents leaked by a former government insider reveal that Big Pharma and global elites funded the program to keep the population docile and obedient. Thousands of doctors who exposed this truth have been silenced. The mainstream media refuses to cover this story because they are paid to hide the truth from you.
+
+Example 2 — Political conspiracy
+
+Title: Democrats stealing election using secret Venezuelan voting machines
+Text: Multiple patriot sources have confirmed that Democratic operatives imported illegal voting machines from Venezuela programmed to flip votes automatically. A whistleblower from inside the deep state revealed that George Soros personally funded the operation with $500 million. The FBI and CIA are covering it up because they are controlled by the same globalist elite. Share this before it gets deleted — they don't want you to know the truth.
+
